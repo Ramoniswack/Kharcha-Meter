@@ -35,12 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (loading) {
+        console.log('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 3000); // 3 second timeout
+    }, 5000); // Increased to 5 seconds
 
     // Get initial session
     AuthService.getCurrentSession().then((session) => {
+      console.log('Initial session check:', !!session, session?.user?.email);
       setSession(session);
       if (session?.user) {
         loadUserProfile(session.user);

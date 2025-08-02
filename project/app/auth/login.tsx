@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -17,13 +17,21 @@ import { Eye, EyeOff } from 'lucide-react-native';
 
 export default function LoginScreen() {
   const { colors } = useTheme();
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithGoogle, user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const buttonDisabled = isLoading;
+  // Listen for auth state changes and navigate when user is authenticated
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('Login screen: User authenticated, navigating to tabs');
+      router.replace('/(tabs)');
+    }
+  }, [user, loading]);
+
+  const buttonDisabled = isLoading || loading;
   const buttonOpacity = buttonDisabled ? 0.7 : 1;
   const containerStyle = [styles.container, { backgroundColor: colors.background }];
 
@@ -39,13 +47,18 @@ export default function LoginScreen() {
       
       if (error) {
         Alert.alert('Login Failed', error);
+        setIsLoading(false);
       } else if (user) {
-        // Success! Auth state will handle navigation
+        // Success! Let auth context handle navigation automatically
         console.log('Login successful:', user);
-        // Keep loading state until navigation completes
-        setTimeout(() => setIsLoading(false), 1000);
+        // Don't manually set loading to false - let navigation handle it
+      } else {
+        // No user and no error - unexpected state
+        Alert.alert('Error', 'Login failed - please try again');
+        setIsLoading(false);
       }
     } catch (err) {
+      console.error('Login error:', err);
       Alert.alert('Error', 'An unexpected error occurred');
       setIsLoading(false);
     }
@@ -58,13 +71,17 @@ export default function LoginScreen() {
       
       if (error) {
         Alert.alert('Google Sign-In Failed', error);
+        setIsLoading(false);
       } else if (user) {
-        // Success! Auth state will handle navigation
+        // Success! Let auth context handle navigation automatically  
         console.log('Google login successful:', user);
-        // Keep loading state until navigation completes
-        setTimeout(() => setIsLoading(false), 1000);
+        // Don't manually set loading to false - let navigation handle it
+      } else {
+        Alert.alert('Error', 'Google Sign-In failed - please try again');
+        setIsLoading(false);
       }
     } catch (err) {
+      console.error('Google login error:', err);
       Alert.alert('Error', 'Google Sign-In failed');
       setIsLoading(false);
     }
