@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "KharchaMeter",
+    "slug": "kharcha-meter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/KharchaMeter.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/KharchaMeter.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3B82F6"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.kharchameter",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "kharchameter",
+            "CFBundleURLSchemes": ["myapp", "com.yourname.kharchameter"]
+          }
+        ],
+        "NSCameraUsageDescription": "This app uses the camera to capture receipts for expense tracking.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select receipt images for expense tracking."
+      },
+      "associatedDomains": ["applinks:*.supabase.co", "applinks:*.supabase.com"],
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/KharchaMeter.png",
+        "backgroundColor": "#3B82F6"
+      },
+      "package": "com.yourname.kharchameter",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.supabase.co"
+            },
+            {
+              "scheme": "myapp"
+            }
+          ]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/KharchaMeter.png"
+    },
+    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
+  }
+}
