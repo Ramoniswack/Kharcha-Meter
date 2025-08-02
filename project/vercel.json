@@ -1,9 +1,21 @@
 {
-  "buildCommand": "npm run build:web",
+  "buildCommand": "npx expo export --platform web --output-dir dist",
   "outputDirectory": "dist",
-  "devCommand": "npm run web",
+  "devCommand": "npx expo start --web",
   "installCommand": "npm install",
   "framework": null,
+  "functions": {},
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

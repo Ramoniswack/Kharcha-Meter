@@ -24,13 +24,19 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "kharchameter",
-            "CFBundleURLSchemes": ["myapp", "com.yourname.kharchameter"]
+            "CFBundleURLSchemes": [
+              "myapp",
+              "com.yourname.kharchameter"
+            ]
           }
         ],
         "NSCameraUsageDescription": "This app uses the camera to capture receipts for expense tracking.",
         "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select receipt images for expense tracking."
       },
-      "associatedDomains": ["applinks:*.supabase.co", "applinks:*.supabase.com"],
+      "associatedDomains": [
+        "applinks:*.supabase.co",
+        "applinks:*.supabase.com"
+      ],
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -45,7 +51,10 @@
         {
           "action": "VIEW",
           "autoVerify": true,
-          "category": ["BROWSABLE", "DEFAULT"],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
           "data": [
             {
               "scheme": "https",
@@ -63,14 +72,19 @@
       "output": "single",
       "favicon": "./assets/images/KharchaMeter.png"
     },
-    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "63f1552c-3fe2-4e1a-ba3c-2510def2f9cc"
       }
-    }
+    },
+    "owner": "ramoniswack"
   }
 }

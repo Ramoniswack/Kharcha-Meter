@@ -1,0 +1,10 @@
+{
+  "name": "kharcha-meter-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd project && npm install && npm run build:web",
+    "dev": "cd project && npm run web",
+    "install": "cd project && npm install"
+  }
+}
