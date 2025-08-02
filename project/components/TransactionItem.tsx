@@ -1,9 +1,43 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { useTheme } from '@/contexts/ThemeContext';
+imp  rightSection: {
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  amountContainer: {
+    alignItems: 'flex-end',
+  },
+  amount: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  typeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.8,
+  },
+});m '@/contexts/ThemeContext';
 import { Transaction } from '@/types';
 import { getCategoryIcon, getCategoryColor } from '@/utils/categoryIcons';
+import { Edit3 } from 'lucide-react-native';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -16,10 +50,12 @@ export function TransactionItem({ transaction, onPress }: TransactionItemProps) 
   const handlePress = () => {
     if (onPress) {
       onPress();
-    } else {
-      // Navigate to edit transaction screen
-      router.push(`/edit-transaction?id=${transaction.id}`);
     }
+  };
+
+  const handleEdit = () => {
+    // Navigate to edit transaction screen
+    router.push(`/edit-transaction?id=${transaction.id}`);
   };
   
   const formatDate = (dateString: string) => {
@@ -48,10 +84,8 @@ export function TransactionItem({ transaction, onPress }: TransactionItemProps) 
   };
 
   return (
-    <TouchableOpacity 
+    <View 
       style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      onPress={handlePress}
-      activeOpacity={0.7}
     >
       <View style={styles.leftSection}>
         <View style={[styles.iconContainer, { backgroundColor: hexToRgba(categoryColor, 0.125) }]}>
@@ -70,19 +104,28 @@ export function TransactionItem({ transaction, onPress }: TransactionItemProps) 
         </View>
       </View>
       <View style={styles.rightSection}>
-        <Text style={[styles.amount, { color: amountColor }]}>
-          {amountPrefix}₹{transaction.amount.toLocaleString()}
-        </Text>
-        <View style={[
-          styles.typeBadge, 
-          { backgroundColor: transaction.type === 'income' ? colors.success : colors.error }
-        ]}>
-          <Text style={styles.typeText}>
-            {transaction.type.toUpperCase()}
+        <View style={styles.amountContainer}>
+          <Text style={[styles.amount, { color: amountColor }]}>
+            {amountPrefix}₹{transaction.amount.toLocaleString()}
           </Text>
+          <View style={[
+            styles.typeBadge, 
+            { backgroundColor: transaction.type === 'income' ? colors.success : colors.error }
+          ]}>
+            <Text style={styles.typeText}>
+              {transaction.type.toUpperCase()}
+            </Text>
+          </View>
         </View>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.background }]}
+          onPress={handleEdit}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Edit3 size={16} color={colors.primary} />
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
