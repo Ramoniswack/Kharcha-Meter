@@ -1,7 +1,7 @@
 # KharchaMeter
 
 <div align="center">
-  <img src="project/assets/images/KharchaMeter.png" alt="KharchaMeter Logo" width="300"/>
+  <img src="project/assets/images/KharchaMeter.png" alt="KharchaMeter Logo" width="200"/>
   
   **Smart Expense Tracker for Modern Life**
   
