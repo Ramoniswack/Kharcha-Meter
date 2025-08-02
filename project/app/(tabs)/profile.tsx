@@ -112,9 +112,21 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
-    console.log('Logout button pressed - going to signin');
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    console.log('Logout button pressed - clearing session and going to signin');
+    
+    try {
+      // Clear the user session first
+      await signOut();
+      console.log('Session cleared successfully');
+      
+      // Then navigate to login
+      router.replace('/auth/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if signOut fails, still navigate to login
+      router.replace('/auth/login');
+    }
   };
 
   const showPrivacyPolicy = () => {
