@@ -104,31 +104,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
     try {
       const result = await AuthService.signIn(email, password);
       return result;
     } catch (error) {
       return { user: null, error: 'Login failed' };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    setLoading(true);
     try {
       const result = await AuthService.signUp(email, password, name);
       return result;
     } catch (error) {
       return { user: null, error: 'Signup failed' };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signOut = async () => {
-    setLoading(true);
     try {
       console.log('Starting signOut process...');
       const result = await AuthService.signOut();
@@ -143,25 +136,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error('SignOut error:', error);
       return { error: error.message || 'Logout failed' };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true);
     try {
       // Always use real Google OAuth - no mock authentication
       const result = await AuthService.signInWithGoogle();
       if (result.error) {
-        setLoading(false);
         return { user: null, error: result.error };
       }
       
       // The user will be set automatically by the auth state change listener
       return { user: null, error: null };
     } catch (error: any) {
-      setLoading(false);
       return { user: null, error: error.message || 'Google login failed' };
     }
   };
