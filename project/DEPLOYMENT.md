@@ -6,19 +6,19 @@
 
 1. **Build the web version:**
 
-   ```bash
+   ```powershell
    npm run build:web
    ```
 
 2. **Deploy to Vercel (Free):**
 
-   ```bash
+   ```powershell
    npm install -g vercel
    vercel --cwd dist
    ```
 
 3. **Deploy to Netlify (Free):**
-   ```bash
+   ```powershell
    npm install -g netlify-cli
    netlify deploy --prod --dir dist
    ```
@@ -36,7 +36,7 @@
 
 **Step 1: Configure iOS settings**
 
-```bash
+```powershell
 # Initialize EAS configuration
 eas build:configure
 ```
@@ -49,7 +49,7 @@ eas build:configure
 
 **Step 3: Build for iOS**
 
-```bash
+```powershell
 # Development build (for testing on device)
 eas build --platform ios --profile development
 
@@ -70,19 +70,19 @@ EAS will automatically handle:
 
 #### Android APK Build
 
-```bash
+```powershell
 eas build --platform android --profile preview
 ```
 
 #### iOS Build (requires Apple Developer account)
 
-```bash
+```powershell
 eas build --platform ios --profile preview
 ```
 
 #### Production Builds
 
-```bash
+```powershell
 # For Google Play Store
 eas build --platform android --profile production
 
@@ -135,7 +135,7 @@ Before deploying, make sure to set up environment variables:
 
 ### For Vercel:
 
-```bash
+```powershell
 vercel env add EXPO_PUBLIC_SUPABASE_URL
 vercel env add EXPO_PUBLIC_SUPABASE_ANON_KEY
 ```
