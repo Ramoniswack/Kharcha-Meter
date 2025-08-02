@@ -7,7 +7,8 @@ import {
   SafeAreaView, 
   TextInput, 
   TouchableOpacity,
-  Alert
+  Alert,
+  Modal
 } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -20,7 +21,8 @@ import {
   Tag,
   FileText,
   Save,
-  RotateCcw
+  RotateCcw,
+  Check
 } from 'lucide-react-native';
 
 export default function AddTransactionScreen() {
@@ -34,6 +36,8 @@ export default function AddTransactionScreen() {
   const [date, setDate] = useState(new Date().toISOString());
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [savedAmount, setSavedAmount] = useState('');
 
   const categories = type === 'income' ? incomeCategories : expenseCategories;
 
@@ -87,29 +91,19 @@ export default function AddTransactionScreen() {
       });
 
       if (success) {
-        Alert.alert(
-          'Success! 🎉', 
-          `${type === 'income' ? 'Income' : 'Expense'} of ₹${parseFloat(amount).toLocaleString()} added successfully!`,
-          [
-            {
-              text: 'Add Another',
-              onPress: () => {
-                // Reset form but keep the same type
-                setAmount('');
-                setTitle('');
-                setCategory('');
-                setNotes('');
-                setDate(new Date().toISOString());
-                setErrors({});
-              }
-            },
-            {
-              text: 'View Home',
-              style: 'default',
-              onPress: () => router.push('/(tabs)')
-            }
-          ]
-        );
+        setSavedAmount(parseFloat(amount).toLocaleString());
+        setShowSuccessModal(true);
+        
+        // Reset form after showing modal
+        setTimeout(() => {
+          setAmount('');
+          setTitle('');
+          setCategory('');
+          setNotes('');
+          setDate(new Date().toISOString());
+          setErrors({});
+          setShowSuccessModal(false);
+        }, 2000);
       } else {
         Alert.alert('Error', 'Failed to save transaction. Please try again.');
       }
@@ -358,6 +352,25 @@ export default function AddTransactionScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={[styles.successIcon, { backgroundColor: colors.success }]}>
+              <Check size={32} color="#fff" />
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Success! 🎉</Text>
+            <Text style={[styles.modalMessage, { color: colors.textSecondary }]}>
+              {type === 'income' ? 'Income' : 'Expense'} of ₹{savedAmount} added successfully!
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -487,5 +500,35 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 4,
     marginLeft: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalContent: {
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    minWidth: 200,
+    marginHorizontal: 20,
+  },
+  successIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

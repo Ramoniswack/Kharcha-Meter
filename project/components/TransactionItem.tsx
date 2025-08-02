@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Transaction } from '@/types';
 import { getCategoryIcon, getCategoryColor } from '@/utils/categoryIcons';
@@ -11,6 +12,15 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction, onPress }: TransactionItemProps) {
   const { colors } = useTheme();
+  
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      // Navigate to edit transaction screen
+      router.push(`/edit-transaction?id=${transaction.id}`);
+    }
+  };
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -40,7 +50,7 @@ export function TransactionItem({ transaction, onPress }: TransactionItemProps) 
   return (
     <TouchableOpacity 
       style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
     >
       <View style={styles.leftSection}>
