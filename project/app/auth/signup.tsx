@@ -15,65 +15,82 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react-native';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const { colors } = useTheme();
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const buttonDisabled = isLoading;
-  const buttonOpacity = buttonDisabled ? 0.7 : 1;
-  const containerStyle = [styles.container, { backgroundColor: colors.background }];
+  const buttonDisabled = !name || !email || !password || !confirmPassword || isLoading;
+  const buttonOpacity = buttonDisabled ? 0.6 : 1;
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+  const handleSignUp = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
       return;
     }
 
     setIsLoading(true);
     try {
-      const { user, error } = await signIn(email, password);
+      const { user, error } = await signUp(email, password, name);
       
       if (error) {
-        Alert.alert('Login Failed', error);
-        setIsLoading(false);
+        Alert.alert('Signup Failed', error);
       } else if (user) {
-        // Don't manually navigate - let the auth state change handle it
-        console.log('Login successful:', user);
+        // Success! Auth state will handle navigation
+        console.log('Signup successful:', user);
+        // Keep loading state until navigation completes
+        setTimeout(() => setIsLoading(false), 1000);
       }
-    } catch (err) {
-      Alert.alert('Error', 'An unexpected error occurred');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'An unexpected error occurred');
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
       const { user, error } = await signInWithGoogle();
       
       if (error) {
-        Alert.alert('Google Sign-In Failed', error);
-        setIsLoading(false);
+        Alert.alert('Google Signup Failed', error);
       } else if (user) {
-        // Don't manually navigate - let the auth state change handle it
-        console.log('Google login successful:', user);
+        // Success! Auth state will handle navigation
+        console.log('Google signup successful:', user);
+        // Keep loading state until navigation completes
+        setTimeout(() => setIsLoading(false), 1000);
       }
-    } catch (err) {
-      Alert.alert('Error', 'Google Sign-In failed');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'An unexpected error occurred');
       setIsLoading(false);
     }
-    // Remove setIsLoading(false) from finally to let auth state change handle it
   };
 
   return (
-    <SafeAreaView style={containerStyle}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.mainContainer}>
-          {/* Left Side - Image/Branding */}
+          {/* Left Side - Branding */}
           <View style={[styles.leftSide, { backgroundColor: '#3B82F6' }]}>
             <View style={styles.brandingContainer}>
               <View style={styles.logoContainer}>
@@ -83,17 +100,39 @@ export default function LoginScreen() {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.brandSubtext}>Track your expenses smartly</Text>
+              <Text style={styles.brandSubtext}>
+                Track your expenses smartly with KharchaMeter
+              </Text>
             </View>
           </View>
 
-          {/* Right Side - Login Form */}
-          <View style={[styles.rightSide, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Sign in to your account
-            </Text>
-
+          {/* Right Side - Form */}
+          <View style={styles.rightSide}>
+            <Text style={styles.title}>Create Account</Text>
+            
             <View style={styles.form}>
+              {/* Name Input with Floating Label */}
+              <View style={styles.floatingInputContainer}>
+                <TextInput
+                  style={[styles.floatingInput, { 
+                    color: colors.text,
+                    borderBottomColor: name ? '#3B82F6' : colors.border 
+                  }]}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder=" "
+                  autoCapitalize="words"
+                />
+                <Text style={[styles.floatingLabel, { 
+                  color: name ? '#3B82F6' : colors.textSecondary,
+                  top: name ? 2 : 14,
+                  fontSize: name ? 12 : 16,
+                  pointerEvents: 'none'
+                }]}>
+                  Full Name
+                </Text>
+              </View>
+
               {/* Email Input with Floating Label */}
               <View style={styles.floatingInputContainer}>
                 <TextInput
@@ -106,8 +145,6 @@ export default function LoginScreen() {
                   placeholder=" "
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  textContentType="emailAddress"
-                  autoComplete="email"
                 />
                 <Text style={[styles.floatingLabel, { 
                   color: email ? '#3B82F6' : colors.textSecondary,
@@ -115,7 +152,7 @@ export default function LoginScreen() {
                   fontSize: email ? 12 : 16,
                   pointerEvents: 'none'
                 }]}>
-                  Email address
+                  Email
                 </Text>
               </View>
 
@@ -130,7 +167,6 @@ export default function LoginScreen() {
                   onChangeText={setPassword}
                   placeholder=" "
                   secureTextEntry={!showPassword}
-                  textContentType="password"
                 />
                 <Text style={[styles.floatingLabel, { 
                   color: password ? '#3B82F6' : colors.textSecondary,
@@ -152,31 +188,46 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Options Row */}
-              <View style={styles.optionsRow}>
-                <View style={styles.rememberMe}>
-                  <TouchableOpacity style={styles.checkbox}>
-                    <View style={[styles.checkboxInner, { borderColor: colors.border }]} />
-                  </TouchableOpacity>
-                  <Text style={[styles.rememberText, { color: colors.textSecondary }]}>
-                    Remember me
-                  </Text>
-                </View>
-                <Link href="/auth/forgot-password" asChild>
-                  <TouchableOpacity>
-                    <Text style={styles.forgotText}>Forgot password?</Text>
-                  </TouchableOpacity>
-                </Link>
+              {/* Confirm Password Input with Floating Label */}
+              <View style={styles.floatingInputContainer}>
+                <TextInput
+                  style={[styles.floatingInput, { 
+                    color: colors.text,
+                    borderBottomColor: confirmPassword ? '#3B82F6' : colors.border 
+                  }]}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder=" "
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <Text style={[styles.floatingLabel, { 
+                  color: confirmPassword ? '#3B82F6' : colors.textSecondary,
+                  top: confirmPassword ? 2 : 14,
+                  fontSize: confirmPassword ? 12 : 16,
+                  pointerEvents: 'none'
+                }]}>
+                  Confirm Password
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={styles.eyeIconFloating}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} color={colors.textSecondary} />
+                  ) : (
+                    <Eye size={20} color={colors.textSecondary} />
+                  )}
+                </TouchableOpacity>
               </View>
 
-              {/* Sign In Button */}
+              {/* Sign Up Button */}
               <TouchableOpacity
                 style={[styles.signInButton, { opacity: buttonOpacity }]}
-                onPress={handleLogin}
+                onPress={handleSignUp}
                 disabled={buttonDisabled}
               >
                 <Text style={styles.signInButtonText}>
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  {isLoading ? 'Creating Account...' : 'Sign Up'}
                 </Text>
               </TouchableOpacity>
 
@@ -187,14 +238,14 @@ export default function LoginScreen() {
                 <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
               </View>
 
-              {/* Google Login Button */}
+              {/* Google Signup Button */}
               <TouchableOpacity
                 style={[styles.socialButton, { 
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
                   opacity: buttonOpacity
                 }]}
-                onPress={handleGoogleLogin}
+                onPress={handleGoogleSignup}
                 disabled={buttonDisabled}
               >
                 <Text style={styles.googleIcon}>G</Text>
@@ -203,14 +254,14 @@ export default function LoginScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Sign Up Link */}
+              {/* Sign In Link */}
               <View style={styles.signUpRow}>
                 <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
-                  Don't have an account?{' '}
+                  Already have an account?{' '}
                 </Text>
-                <Link href="/auth/signup" asChild>
+                <Link href="/auth/login" asChild>
                   <TouchableOpacity>
-                    <Text style={styles.signUpLink}>Sign up</Text>
+                    <Text style={styles.signUpLink}>Sign in</Text>
                   </TouchableOpacity>
                 </Link>
               </View>
@@ -239,11 +290,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     flexDirection: 'column',
-    minHeight: 600,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 50,
+    minHeight: 700,
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
     elevation: 20,
   },
   leftSide: {
@@ -258,14 +306,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logoContainer: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   brandLogo: {
     width: 80,
@@ -292,7 +334,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   form: {
-    gap: 20,
+    gap: 24,
   },
   floatingInputContainer: {
     position: 'relative',
@@ -319,48 +361,12 @@ const styles = StyleSheet.create({
     top: 12,
     padding: 4,
   },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  rememberMe: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  checkbox: {
-    width: 16,
-    height: 16,
-  },
-  checkboxInner: {
-    width: 16,
-    height: 16,
-    borderWidth: 1,
-    borderRadius: 3,
-    borderColor: '#D1D5DB',
-  },
-  rememberText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  forgotText: {
-    fontSize: 14,
-    color: '#3B82F6',
-    textDecorationLine: 'underline',
-  },
   signInButton: {
     backgroundColor: '#3B82F6',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   signInButtonText: {
     color: '#FFFFFF',
@@ -370,44 +376,36 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    marginVertical: 8,
+    marginVertical: 20,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#E5E7EB',
   },
   dividerText: {
+    marginHorizontal: 16,
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
+    fontWeight: '500',
   },
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    gap: 12,
   },
   googleIcon: {
-    width: 20,
-    height: 20,
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#4285F4',
-    textAlign: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
   },
   socialButtonText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
-    color: '#374151',
   },
   signUpRow: {
     flexDirection: 'row',
@@ -422,6 +420,6 @@ const styles = StyleSheet.create({
   signUpLink: {
     fontSize: 14,
     color: '#3B82F6',
-    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 });

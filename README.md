@@ -1,153 +1,211 @@
 # KharchaMeter
 
-Smart expense tracker built with React Native and Expo.
+<div align="center">
+  <img src="project/assets/images/KharchaMeter.png" alt="KharchaMeter Logo" width="300"/>
+  
+  **Smart Expense Tracker for Modern Life**
+  
+  [![React Native](https://img.shields.io/badge/React_Native-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactnative.dev)
+  [![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo&logoColor=white)](https://expo.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
+  [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+</div>
 
-## Features
+---
 
-- Track income and expenses with categorization
+## Overview
+
+KharchaMeter is a modern, feature-rich expense tracking application built with React Native and Expo. Take control of your finances with beautiful visualizations, secure authentication, and real-time synchronization across all your devices.
+
+## Key Features
+
+### Smart Financial Tracking
+
+- Track income and expenses with intelligent categorization
 - Visual analytics and spending insights
-- Secure authentication with Google OAuth
-- Real-time data synchronization
+- Real-time budget monitoring
+- Transaction editing and management
+
+### Secure & Reliable
+
+- Google OAuth authentication
+- Real-time data synchronization with Supabase
+- Secure cloud storage with Row Level Security
+- Offline-first architecture
+
+### Beautiful Experience
+
+- Modern, intuitive interface
 - Dark/Light theme support
-- Cross-platform (Web, iOS, Android)
+- Smooth animations and transitions
+- Cross-platform compatibility (Web, iOS, Android)
 
-## Tech Stack
+### Advanced Analytics
 
-**Frontend:**
-
-- React Native with Expo
-- TypeScript
-- Expo Router for navigation
-- Lucide React Native for icons
-
-**Backend:**
-
-- Supabase (Database, Authentication, Real-time)
-- PostgreSQL database
-- Row Level Security (RLS)
+- Category-wise spending breakdown
+- Monthly and yearly trends
+- Visual charts and graphs
+- Export capabilities
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 18.0+
 - Expo CLI
 - Supabase account
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**
 
    ```bash
    git clone https://github.com/Ramoniswack/Kharcha-Meter.git
    cd Kharcha-Meter/project
    ```
 
-2. Install dependencies:
+2. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
+3. **Setup environment variables**
 
    ```bash
    cp .env.example .env
    ```
 
-   Edit `.env` with your Supabase credentials:
+   Configure your `.env` file:
 
-   ```
+   ```env
    EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
    EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
    ```
 
-4. Start the development server:
+4. **Start development**
    ```bash
    npm start
    ```
 
-## Development
+## Technology Stack
 
-### Available Scripts
+### Frontend & Mobile
 
-```bash
-npm start          # Start development server
-npm run web        # Run in web browser
-npm run android    # Run on Android
-npm run ios        # Run on iOS
+- **React Native** - Cross-platform mobile development
+- **Expo** - Development platform and build service
+- **TypeScript** - Type-safe development
+- **Expo Router** - File-based navigation
 
-npm run build:web     # Build for web deployment
-npm run build:android # Build Android APK
-npm run build:ios     # Build iOS app
-```
+### Backend & Database
 
-### Testing
+- **Supabase** - Backend-as-a-Service
+- **PostgreSQL** - Robust database
+- **Row Level Security** - Data protection
+- **Real-time subscriptions** - Live updates
 
-- Web: Open http://localhost:8081
-- Mobile: Scan QR code with Expo Go app
+### UI & Design
+
+- **Lucide React Native** - Beautiful icon library
+- **Custom Components** - Reusable UI elements
+- **Theme System** - Dark/Light mode support
+- **Responsive Design** - Optimized for all screen sizes
+
+## Available Scripts
+
+| Command                        | Description                    |
+| ------------------------------ | ------------------------------ |
+| `npm start`                    | Start Expo development server  |
+| `npm run web`                  | Run in web browser             |
+| `npm run android`              | Run on Android device/emulator |
+| `npm run ios`                  | Run on iOS device/simulator    |
+| `npm run build:web`            | Build for web deployment       |
+| `eas build --platform android` | Build Android APK              |
+| `eas build --platform ios`     | Build iOS app                  |
 
 ## Deployment
 
 ### Web Deployment (Vercel)
 
 1. Connect GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+2. Configure environment variables
+3. Automatic deployment on push to main
 
 ### Mobile Deployment
 
-- Android: Build APK with `eas build --platform android`
-- iOS: Build with `eas build --platform ios` (requires Apple Developer account)
+- **Android**: EAS Build for Play Store
+- **iOS**: EAS Build for App Store (Apple Developer account required)
 
 ## Database Schema
 
 ### Users Table
 
-- id (UUID, Primary Key)
-- email (Text, Unique)
-- name (Text)
-- avatar_url (Text, Optional)
-- created_at (Timestamp)
-- updated_at (Timestamp)
+```sql
+users (
+  id UUID PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+)
+```
 
 ### Transactions Table
 
-- id (UUID, Primary Key)
-- user_id (UUID, Foreign Key)
-- title (Text)
-- amount (Numeric)
-- type (income/expense)
-- category (Text)
-- date (Date)
-- notes (Text, Optional)
-- created_at (Timestamp)
-- updated_at (Timestamp)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues and questions:
-
-- Create an issue on GitHub
-- Check the documentation in the `/docs` folder
+```sql
+transactions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  title TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  type TEXT CHECK (type IN ('income', 'expense')),
+  category TEXT NOT NULL,
+  date DATE NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+)
+```
 
 ## Roadmap
 
-- Receipt scanning with OCR
-- Budget planning and alerts
-- Export to CSV/PDF
-- Multi-currency support
-- Recurring transactions
-- Advanced analytics and reports
+- [ ] Receipt scanning with OCR
+- [ ] Budget planning and alerts
+- [ ] Export to CSV/PDF
+- [ ] Multi-currency support
+- [ ] Recurring transactions
+- [ ] Advanced analytics dashboard
+- [ ] Bank account integration
+- [ ] Investment tracking
+
+## Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Support
+
+Need help? We're here for you:
+
+- [Report bugs](https://github.com/Ramoniswack/Kharcha-Meter/issues)
+- [Request features](https://github.com/Ramoniswack/Kharcha-Meter/issues)
+- Check the documentation
+- Join our community discussions
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <p><strong>Made for better financial management</strong></p>
+  <p><i>© 2024 KharchaMeter. All rights reserved.</i></p>
+</div>
