@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -10,28 +10,23 @@ import {
   Alert,
   Image
 } from 'react-native';
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react-native';
 
 export default function LoginScreen() {
   const { colors } = useTheme();
-  const { signIn, signInWithGoogle, user, loading } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Listen for auth state changes and navigate when user is authenticated
-  useEffect(() => {
-    if (!loading && user) {
-      console.log('Login screen: User authenticated, navigating to tabs');
-      router.replace('/(tabs)');
-    }
-  }, [user, loading]);
+  // Remove the auth state listener from login screen to prevent conflicts
+  // Let the root index.tsx handle all navigation
 
-  const buttonDisabled = isLoading || loading;
+  const buttonDisabled = isLoading;
   const buttonOpacity = buttonDisabled ? 0.7 : 1;
   const containerStyle = [styles.container, { backgroundColor: colors.background }];
 
