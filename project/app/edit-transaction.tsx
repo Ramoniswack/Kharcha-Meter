@@ -27,31 +27,74 @@ import {
 
 export default function EditTransactionScreen() {
   const { colors } = useTheme();
-  const { updateTransaction, deleteTransaction, transactions } = useData();
+  const { updateTransaction, deleteTransaction, transactions, loading } = useData();
   const params = useLocalSearchParams();
   const transactionId = params.id as string;
   
   // Find the transaction to edit
   const transaction = transactions.find(t => t.id === transactionId);
   
-  const [type, setType] = useState<'income' | 'expense'>(transaction?.type || 'expense');
-  const [title, setTitle] = useState(transaction?.title || '');
-  const [amount, setAmount] = useState(transaction?.amount?.toString() || '');
-  const [category, setCategory] = useState(transaction?.category || '');
-  const [notes, setNotes] = useState(transaction?.notes || '');
-  const [date, setDate] = useState(transaction?.date || new Date().toISOString());
+  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [title, setTitle] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [notes, setNotes] = useState('');
+  const [date, setDate] = useState(new Date().toISOString());
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const categories = type === 'income' ? incomeCategories : expenseCategories;
 
+  // Initialize form data when transaction is found
   useEffect(() => {
-    if (!transaction) {
-      Alert.alert('Error', 'Transaction not found');
-      router.back();
+    if (transaction && !dataLoaded) {
+      setType(transaction.type);
+      setTitle(transaction.title);
+      setAmount(transaction.amount.toString());
+      setCategory(transaction.category);
+      setNotes(transaction.notes || '');
+      setDate(transaction.date);
+      setDataLoaded(true);
     }
-  }, [transaction]);
+  }, [transaction, dataLoaded]);
+
+  useEffect(() => {
+    if (!loading && !transaction && transactionId) {
+      Alert.alert('Error', 'Transaction not found', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    }
+  }, [loading, transaction, transactionId]);
+
+  // Show loading state while transactions are being fetched
+  if (loading || !dataLoaded) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading transaction...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state if transaction not found after loading
+  if (!transaction) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.errorText, { color: colors.error }]}>Transaction not found</Text>
+          <TouchableOpacity 
+            style={[styles.errorBackButton, { backgroundColor: colors.primary }]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Validation functions
   const validateForm = () => {
@@ -251,13 +294,13 @@ export default function EditTransactionScreen() {
           <Text style={[styles.label, { color: colors.textSecondary }]}>Category *</Text>
           <View style={styles.categoryGrid}>
             {categories.map((cat) => {
-              const IconComponent = getCategoryIcon(cat, type);
-              const isSelected = category === cat;
-              const categoryColor = getCategoryColor(cat, type);
+              const IconComponent = getCategoryIcon(cat.name, type);
+              const isSelected = category === cat.name;
+              const categoryColor = getCategoryColor(cat.name, type);
               
               return (
                 <TouchableOpacity
-                  key={cat}
+                  key={cat.name}
                   style={[
                     styles.categoryItem,
                     { 
@@ -265,7 +308,7 @@ export default function EditTransactionScreen() {
                       borderColor: isSelected ? categoryColor : colors.border
                     }
                   ]}
-                  onPress={() => setCategory(cat)}
+                  onPress={() => setCategory(cat.name)}
                 >
                   <IconComponent 
                     size={20} 
@@ -275,7 +318,7 @@ export default function EditTransactionScreen() {
                     styles.categoryText,
                     { color: isSelected ? '#fff' : colors.text }
                   ]}>
-                    {cat}
+                    {cat.name}
                   </Text>
                 </TouchableOpacity>
               );
@@ -508,6 +551,32 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     marginTop: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorBackButton: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
