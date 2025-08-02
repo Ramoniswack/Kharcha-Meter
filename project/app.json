@@ -4,12 +4,12 @@
     "slug": "kharcha-meter",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/KharchaMeter.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/KharchaMeter.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#3B82F6"
     },
@@ -20,6 +20,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.yourname.kharchameter",
       "buildNumber": "1",
+      "icon": "./assets/images/icon.png",
       "infoPlist": {
         "CFBundleURLTypes": [
           {
