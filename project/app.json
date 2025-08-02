@@ -69,8 +69,13 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single",
-      "favicon": "./assets/images/KharchaMeter.png"
+      "output": "single", 
+      "favicon": "./assets/images/KharchaMeter.png",
+      "name": "KharchaMeter",
+      "shortName": "KharchaMeter",
+      "description": "Track your expenses smartly",
+      "themeColor": "#3B82F6",
+      "backgroundColor": "#3B82F6"
     },
     "plugins": [
       "expo-router",
