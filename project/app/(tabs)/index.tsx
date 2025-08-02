@@ -5,7 +5,7 @@ import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SummaryCard } from '@/components/SummaryCard';
 import { CategoryChart } from '@/components/CategoryChart';
-import { TransactionItem } from '@/components/TransactionItem';
+import TransactionItem from '@/components/TransactionItem';
 import { router } from 'expo-router';
 import { 
   Wallet, 

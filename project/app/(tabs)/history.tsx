@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useData } from '@/contexts/DataContext';
-import { TransactionItem } from '@/components/TransactionItem';
+import TransactionItem from '@/components/TransactionItem';
 import { Transaction } from '@/types';
 import { 
   Search, 

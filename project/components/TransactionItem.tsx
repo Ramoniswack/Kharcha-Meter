@@ -3,22 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { router } from 'expo-router';
 import { Edit3 } from 'lucide-react-native';
-
-interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  type: 'income' | 'expense';
-  date: string;
-}
+import { Transaction } from '../types';
 
 interface TransactionItemProps {
   transaction: Transaction;
 }
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
-  const { theme } = useTheme();
+  const { colors } = useTheme();
 
   const handleEdit = () => {
     router.push({
@@ -28,17 +20,17 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.surface }]}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <View style={styles.transactionInfo}>
         <View style={styles.header}>
-          <Text style={[styles.description, { color: theme.onSurface }]}>
-            {transaction.description}
+          <Text style={[styles.description, { color: colors.text }]}>
+            {transaction.title}
           </Text>
           <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-            <Edit3 size={16} color={theme.onSurface} />
+            <Edit3 size={16} color={colors.text} />
           </TouchableOpacity>
         </View>
-        <Text style={[styles.category, { color: theme.onSurface + '80' }]}>
+        <Text style={[styles.category, { color: colors.textSecondary }]}>
           {transaction.category}
         </Text>
       </View>
@@ -47,12 +39,12 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction }) => {
         <Text 
           style={[
             styles.amount, 
-            { color: transaction.type === 'income' ? '#10B981' : '#EF4444' }
+            { color: transaction.type === 'income' ? colors.success : colors.error }
           ]}
         >
           {transaction.type === 'income' ? '+' : '-'}₹{Math.abs(transaction.amount).toFixed(2)}
         </Text>
-        <Text style={[styles.date, { color: theme.onSurface + '60' }]}>
+        <Text style={[styles.date, { color: colors.textSecondary }]}>
           {new Date(transaction.date).toLocaleDateString()}
         </Text>
       </View>

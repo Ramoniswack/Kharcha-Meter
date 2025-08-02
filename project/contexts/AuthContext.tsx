@@ -94,10 +94,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userProfile = await DatabaseService.createUserProfile(authUser);
       }
       
-      console.log('User profile loaded:', userProfile);
-      setUser(userProfile);
+      if (userProfile) {
+        console.log('User profile loaded successfully:', userProfile);
+        setUser(userProfile);
+      } else {
+        console.log('Failed to load or create user profile, using basic info');
+        // Fallback to basic user info from auth
+        setUser({
+          id: authUser.id,
+          email: authUser.email,
+          name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
+          avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
+        });
+      }
     } catch (error) {
       console.error('Error loading user profile:', error);
+      // Fallback to basic user info from auth even on error
+      setUser({
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
+        avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
+      });
     } finally {
       setLoading(false);
     }
