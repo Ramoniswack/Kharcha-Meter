@@ -95,7 +95,7 @@ export default function SignupScreen() {
             <View style={styles.brandingContainer}>
               <View style={styles.logoContainer}>
                 <Image 
-                  source={require('@/assets/images/KharchaMeter.png')} 
+                  source={require('@/assets/images/icon.png')} 
                   style={styles.brandLogo}
                   resizeMode="contain"
                 />

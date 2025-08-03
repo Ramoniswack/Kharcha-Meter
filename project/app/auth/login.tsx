@@ -67,18 +67,16 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { user, error } = await signInWithGoogle();
+      const { data, error } = await signInWithGoogle();
       
       if (error) {
+        console.error('Google OAuth error:', error);
         Alert.alert('Google Sign-In Failed', error);
         setIsLoading(false);
-      } else if (user) {
-        // Success! Let auth context handle navigation automatically  
-        console.log('Google login successful:', user);
-        // Don't manually set loading to false - let navigation handle it
       } else {
-        Alert.alert('Error', 'Google Sign-In failed - please try again');
-        setIsLoading(false);
+        console.log('Google OAuth initiated successfully:', data);
+        // OAuth was initiated successfully - the auth state listener will handle navigation
+        // Don't set loading to false here - let the auth context handle it when user is authenticated
       }
     } catch (err) {
       console.error('Google login error:', err);
@@ -96,7 +94,7 @@ export default function LoginScreen() {
             <View style={styles.brandingContainer}>
               <View style={styles.logoContainer}>
                 <Image 
-                  source={require('@/assets/images/KharchaMeter.png')} 
+                  source={require('@/assets/images/icon.png')} 
                   style={styles.brandLogo}
                   resizeMode="contain"
                 />
