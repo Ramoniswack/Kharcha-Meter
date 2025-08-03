@@ -305,12 +305,14 @@ export class AuthService {
   // OAuth Authentication Methods
   static async signInWithGoogle() {
     try {
-      console.log('Starting Google OAuth...');
+      const callbackURL = getAuthCallbackURL();
+      console.log('🌐 Environment detection - Callback URL:', callbackURL);
+      console.log('🌐 Current location:', typeof window !== 'undefined' ? window.location.href : 'server-side');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: getAuthCallbackURL(),
+          redirectTo: callbackURL,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
