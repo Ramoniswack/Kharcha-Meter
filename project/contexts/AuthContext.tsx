@@ -31,25 +31,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration mismatch by ensuring client-side mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
+    if (!mounted) return; // Don't run until client-side mounted
+    
+    let componentMounted = true;
     
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      if (loading && mounted) {
+      if (loading && componentMounted) {
         console.log('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 3000); // Reduced to 3 seconds for better UX
+    }, 5000); // Increased timeout for production
 
-    // Get initial session - this checks AsyncStorage for saved session
+    // Get initial session - this checks storage for saved session
     const initializeAuth = async () => {
       try {
         console.log('🔍 Checking for existing session...');
+        
+        // Add a small delay to ensure client-side rendering is complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const session = await AuthService.getCurrentSession();
         
-        if (!mounted) return;
+        if (!componentMounted) return;
         
         console.log('Initial session check:', !!session, session?.user?.email);
         setSession(session);
@@ -61,9 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('❌ No existing session found');
           setLoading(false);
         }
-      } catch (error) {
+        } catch (error) {
         console.error('Error getting initial session:', error);
-        if (mounted) {
+        if (componentMounted) {
           setLoading(false);
         }
       } finally {
@@ -71,14 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    initializeAuth();
+    // Only initialize auth after client-side mount
+    if (componentMounted) {
+      initializeAuth();
+    }
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        if (!mounted) return;
-        
-        console.log('🔄 Auth state changed:', event, session?.user?.id);
+        if (!componentMounted) return;        console.log('🔄 Auth state changed:', event, session?.user?.id);
         console.log('Session details:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
@@ -100,11 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
-      mounted = false;
+      componentMounted = false;
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [mounted]); // Depend on mounted state
 
   const loadUserProfile = async (authUser: any) => {
     try {
@@ -239,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
-        loading,
+        loading: loading || !mounted, // Keep loading until mounted
         signIn,
         signUp,
         signInWithGoogle,
