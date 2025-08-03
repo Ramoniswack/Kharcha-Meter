@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Transaction, User } from '../types';
+import { getAuthCallbackURL, getResetPasswordURL } from '../utils/environment';
 
 export interface DatabaseTransaction {
   id: string;
@@ -304,12 +305,12 @@ export class AuthService {
   // OAuth Authentication Methods
   static async signInWithGoogle() {
     try {
-      console.log('Starting Google OAuth for React Native...');
+      console.log('Starting Google OAuth...');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://kharcha-meter.vercel.app/auth/callback',
+          redirectTo: getAuthCallbackURL(),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -335,7 +336,7 @@ export class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: 'https://kharcha-meter.vercel.app/auth/callback'
+          redirectTo: getAuthCallbackURL()
         }
       });
 
@@ -359,7 +360,7 @@ export class AuthService {
   static async resetPassword(email: string) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://kharcha-meter.vercel.app/auth/reset-password'
+        redirectTo: getResetPasswordURL()
       });
       if (error) throw error;
       return { error: null };

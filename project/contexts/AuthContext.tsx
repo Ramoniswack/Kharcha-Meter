@@ -82,16 +82,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Session details:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
-          userEmail: session?.user?.email 
+          userEmail: session?.user?.email,
+          event: event
         });
         
         setSession(session);
         
-        if (session?.user) {
+        if (session?.user && event !== 'SIGNED_OUT') {
           console.log('✅ User authenticated, loading profile for:', session.user.id);
           await loadUserProfile(session.user);
         } else {
-          console.log('❌ No session/user, clearing auth state');
+          console.log('❌ No session/user or signed out, clearing auth state');
           setUser(null);
           setLoading(false);
         }
@@ -107,9 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUserProfile = async (authUser: any) => {
     try {
-      console.log('Loading user profile for userId:', authUser.id);
+      console.log('📝 Loading user profile for:', authUser.id);
       
-      // First, set basic user info immediately to unblock navigation
+      // Immediately set basic user info and stop loading
       const basicUser = {
         id: authUser.id,
         email: authUser.email,
@@ -117,27 +118,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
       };
       
+      console.log('✅ Setting user and stopping loading:', basicUser);
       setUser(basicUser);
-      setLoading(false); // Immediately stop loading to enable navigation
+      setLoading(false); // CRITICAL: Stop loading immediately
       
-      // Then try to get/create full profile in background
-      let userProfile = await DatabaseService.getCurrentUser();
-      
-      // If user profile doesn't exist, create it
-      if (!userProfile && authUser) {
-        console.log('User profile not found, creating new profile...');
-        userProfile = await DatabaseService.createUserProfile(authUser);
-      }
-      
-      // Update with full profile if available
-      if (userProfile) {
-        console.log('User profile loaded successfully:', userProfile);
-        setUser(userProfile);
+      // Try to get full profile in background (non-blocking)
+      try {
+        let userProfile = await DatabaseService.getCurrentUser();
+        
+        if (!userProfile && authUser) {
+          console.log('Creating new user profile...');
+          userProfile = await DatabaseService.createUserProfile(authUser);
+        }
+        
+        // Update with full profile if different
+        if (userProfile && userProfile.id === basicUser.id) {
+          console.log('Updating with full profile:', userProfile);
+          setUser(userProfile);
+        }
+      } catch (profileError) {
+        console.warn('Profile loading failed, keeping basic user:', profileError);
+        // Keep the basic user, don't fail authentication
       }
       
     } catch (error) {
-      console.error('Error loading user profile:', error);
-      // Always ensure user is set and loading is false
+      console.error('❌ Error in loadUserProfile:', error);
+      // Still set basic user info and stop loading
       setUser({
         id: authUser.id,
         email: authUser.email,
@@ -150,10 +156,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('🔐 AuthContext: Signing in user:', email);
       const result = await AuthService.signIn(email, password);
+      
+      if (result.user) {
+        console.log('✅ AuthContext: Sign in successful, user:', result.user.id);
+        // The auth state change listener will handle setting the user
+        // No need to call loadUserProfile here as it will be called by the listener
+      } else if (result.error) {
+        console.error('❌ AuthContext: Sign in failed:', result.error);
+      }
+      
       return result;
-    } catch (error) {
-      return { user: null, error: 'Login failed' };
+    } catch (error: any) {
+      console.error('💥 AuthContext: Sign in exception:', error);
+      return { user: null, error: error.message || 'Login failed' };
     }
   };
 

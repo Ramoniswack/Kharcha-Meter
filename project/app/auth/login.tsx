@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -10,7 +10,7 @@ import {
   Alert,
   Image
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react-native';
@@ -23,9 +23,8 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Remove the auth state listener from login screen to prevent conflicts
-  // Let the root index.tsx handle all navigation
-
+  // Remove all navigation logic from login screen
+  // Let index.tsx handle all navigation
   const buttonDisabled = isLoading;
   const buttonOpacity = buttonDisabled ? 0.7 : 1;
   const containerStyle = [styles.container, { backgroundColor: colors.background }];
@@ -50,8 +49,8 @@ export default function LoginScreen() {
         setIsLoading(false);
       } else if (user) {
         console.log('✅ Login successful for user:', user);
-        // Success! Let auth context handle navigation automatically
-        // Loading will be set to false by the auth context
+        // Success! Let the root index.tsx handle navigation
+        setIsLoading(false);
       } else {
         console.warn('⚠️ No user and no error - unexpected state');
         Alert.alert('Error', 'Login failed - please try again');
@@ -67,14 +66,14 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await signInWithGoogle();
+      const result = await signInWithGoogle();
       
-      if (error) {
-        console.error('Google OAuth error:', error);
-        Alert.alert('Google Sign-In Failed', error);
+      if (result.error) {
+        console.error('Google OAuth error:', result.error);
+        Alert.alert('Google Sign-In Failed', result.error);
         setIsLoading(false);
       } else {
-        console.log('Google OAuth initiated successfully:', data);
+        console.log('Google OAuth initiated successfully');
         // OAuth was initiated successfully - the auth state listener will handle navigation
         // Don't set loading to false here - let the auth context handle it when user is authenticated
       }
@@ -94,7 +93,7 @@ export default function LoginScreen() {
             <View style={styles.brandingContainer}>
               <View style={styles.logoContainer}>
                 <Image 
-                  source={require('@/assets/images/icon.png')} 
+                  source={require('@/assets/images/KharchaMeter.png')} 
                   style={styles.brandLogo}
                   resizeMode="contain"
                 />
@@ -256,7 +255,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     flexDirection: 'column',
     minHeight: 600,
-    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.25,
+    shadowRadius: 50,
     elevation: 20,
   },
   leftSide: {
@@ -363,7 +365,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
-    boxShadow: '0 4px 8px rgba(59, 130, 246, 0.3)',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 8,
   },
   signInButtonText: {

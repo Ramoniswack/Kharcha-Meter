@@ -10,24 +10,22 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('Index: Auth state changed - user:', user, 'loading:', loading);
+    console.log('Index: Auth state - user:', !!user, 'loading:', loading, 'userEmail:', user?.email);
     
-    // Add a small delay to ensure everything is properly loaded
-    const timeoutId = setTimeout(() => {
+    // Add a small delay to ensure auth state is stable
+    const navigationTimeout = setTimeout(() => {
       if (!loading) {
-        if (user) {
-          console.log('Index: Navigating to tabs, user authenticated:', user.email || user.name);
-          // User is authenticated, redirect to tabs
+        if (user && user.email) {
+          console.log('Index: User authenticated, navigating to tabs for:', user.email);
           router.replace('/(tabs)');
         } else {
-          console.log('Index: Navigating to login, no user');
-          // User is not authenticated, redirect to login
+          console.log('Index: No user or incomplete user data, navigating to login');
           router.replace('/auth/login');
         }
       }
-    }, 100); // Small delay to ensure context is ready
+    }, 200); // Small delay to ensure state is stable
 
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(navigationTimeout);
   }, [user, loading, router]);
 
   // Show loading screen while checking authentication
