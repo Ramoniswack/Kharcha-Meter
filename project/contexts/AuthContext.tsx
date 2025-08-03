@@ -38,47 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsClient(true);
   }, []);
 
-  // Prevent hydration mismatch by showing loading state until client is ready
-  if (!isClient) {
-    return (
-      <AuthContext.Provider
-        value={{
-          user: null,
-          session: null,
-          loading: true,
-          signIn: async () => ({ user: null, error: 'Not ready' }),
-          signUp: async () => ({ user: null, error: 'Not ready' }),
-          signInWithGoogle: async () => ({ user: null, error: 'Not ready' }),
-          signOut: async () => ({ error: 'Not ready' }),
-          resetPassword: async () => ({ error: 'Not ready' }),
-          refreshSession: async () => {},
-        }}
-      >
-        {children}
-      </AuthContext.Provider>
-    );
-  }
-
+  // Main auth effect - only runs once when isClient becomes true
   useEffect(() => {
-    // Only run auth logic on client side
+    if (!isClient) return;
+    
     let isMounted = true;
     
-    // Shorter timeout for better UX
-    const timeoutId = setTimeout(() => {
-      if (isMounted && loading) {
-        console.log('⏰ Auth timeout - setting loading to false');
-        setLoading(false);
-      }
-    }, 3000);
-
     const initAuth = async () => {
       try {
         console.log('🔍 Client-side auth initialization...');
-        
-        // Small delay to ensure DOM is ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        if (!isMounted) return;
         
         // Get current session
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
@@ -106,6 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Simple timeout without dependency on loading state
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.log('⏰ Auth timeout - setting loading to false');
+        setLoading(false);
+      }
+    }, 5000);
+
     initAuth();
 
     // Listen for auth changes
@@ -114,12 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isMounted) return;
         
         console.log('🔄 Auth state changed:', event, session?.user?.id);
-        console.log('Session details:', { 
-          hasSession: !!session, 
-          hasUser: !!session?.user,
-          userEmail: session?.user?.email,
-          event: event
-        });
         
         setSession(session);
         
@@ -139,7 +109,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, []); // Remove isClient dependency to prevent re-runs
+  }, [isClient]);
+
+  // Show loading until client is ready
+  if (!isClient) {
+    return (
+      <AuthContext.Provider
+        value={{
+          user: null,
+          session: null,
+          loading: true,
+          signIn: async () => ({ user: null, error: 'Not ready' }),
+          signUp: async () => ({ user: null, error: 'Not ready' }),
+          signInWithGoogle: async () => ({ user: null, error: 'Not ready' }),
+          signOut: async () => ({ error: 'Not ready' }),
+          resetPassword: async () => ({ error: 'Not ready' }),
+          refreshSession: async () => {},
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   const loadUserProfile = async (authUser: any) => {
     try {
@@ -155,26 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log('✅ Setting user and stopping loading:', basicUser);
       setUser(basicUser);
-      setLoading(false); // CRITICAL: Stop loading immediately
-      
-      // Try to get full profile in background (non-blocking)
-      try {
-        let userProfile = await DatabaseService.getCurrentUser();
-        
-        if (!userProfile && authUser) {
-          console.log('Creating new user profile...');
-          userProfile = await DatabaseService.createUserProfile(authUser);
-        }
-        
-        // Update with full profile if different
-        if (userProfile && userProfile.id === basicUser.id) {
-          console.log('Updating with full profile:', userProfile);
-          setUser(userProfile);
-        }
-      } catch (profileError) {
-        console.warn('Profile loading failed, keeping basic user:', profileError);
-        // Keep the basic user, don't fail authentication
-      }
+      setLoading(false);
       
     } catch (error) {
       console.error('❌ Error in loadUserProfile:', error);
