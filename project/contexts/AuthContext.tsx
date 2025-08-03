@@ -31,67 +31,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Handle hydration mismatch by ensuring client-side mounting
+  // Ensure we're on the client side before doing anything
   useEffect(() => {
-    setMounted(true);
+    setIsClient(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return; // Don't run until client-side mounted
+    if (!isClient) return; // Only run on client side
     
-    let componentMounted = true;
+    let isMounted = true;
     
-    // Add a timeout to prevent infinite loading
+    // Shorter timeout for better UX
     const timeoutId = setTimeout(() => {
-      if (loading && componentMounted) {
-        console.log('Auth loading timeout reached, setting loading to false');
+      if (isMounted && loading) {
+        console.log('⏰ Auth timeout - setting loading to false');
         setLoading(false);
       }
-    }, 5000); // Increased timeout for production
+    }, 3000);
 
-    // Get initial session - this checks storage for saved session
-    const initializeAuth = async () => {
+    const initAuth = async () => {
       try {
-        console.log('🔍 Checking for existing session...');
+        console.log('🔍 Client-side auth initialization...');
         
-        // Add a small delay to ensure client-side rendering is complete
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Small delay to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 50));
         
-        const session = await AuthService.getCurrentSession();
+        if (!isMounted) return;
         
-        if (!componentMounted) return;
+        // Get current session
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
-        console.log('Initial session check:', !!session, session?.user?.email);
-        setSession(session);
+        if (!isMounted) return;
         
-        if (session?.user) {
-          console.log('✅ Found existing session, loading user profile...');
-          await loadUserProfile(session.user);
+        console.log('📋 Session check:', { 
+          hasSession: !!currentSession, 
+          hasUser: !!currentSession?.user,
+          error: error?.message 
+        });
+        
+        setSession(currentSession);
+        
+        if (currentSession?.user) {
+          console.log('✅ Session found, setting user...');
+          await loadUserProfile(currentSession.user);
         } else {
-          console.log('❌ No existing session found');
+          console.log('❌ No session found');
           setLoading(false);
         }
-        } catch (error) {
-        console.error('Error getting initial session:', error);
-        if (componentMounted) {
-          setLoading(false);
-        }
-      } finally {
-        clearTimeout(timeoutId);
+      } catch (error) {
+        console.error('❌ Auth init error:', error);
+        if (isMounted) setLoading(false);
       }
     };
 
-    // Only initialize auth after client-side mount
-    if (componentMounted) {
-      initializeAuth();
-    }
+    initAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        if (!componentMounted) return;        console.log('🔄 Auth state changed:', event, session?.user?.id);
+        if (!isMounted) return;
+        
+        console.log('🔄 Auth state changed:', event, session?.user?.id);
         console.log('Session details:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
@@ -113,11 +115,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
-      componentMounted = false;
+      isMounted = false;
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [mounted]); // Depend on mounted state
+  }, [isClient]); // Depend on client state
 
   const loadUserProfile = async (authUser: any) => {
     try {
@@ -252,7 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
-        loading: loading || !mounted, // Keep loading until mounted
+        loading: loading || !isClient, // Keep loading until client-side
         signIn,
         signUp,
         signInWithGoogle,
