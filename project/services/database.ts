@@ -309,7 +309,7 @@ export class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'com.yourname.kharchameter://auth/callback',
+          redirectTo: 'https://kharcha-meter.vercel.app/auth/callback',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -335,7 +335,7 @@ export class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: 'com.yourname.kharchameter://auth/callback'
+          redirectTo: 'https://kharcha-meter.vercel.app/auth/callback'
         }
       });
 
@@ -359,7 +359,7 @@ export class AuthService {
   static async resetPassword(email: string) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'com.yourname.kharchameter://auth/reset-password'
+        redirectTo: 'https://kharcha-meter.vercel.app/auth/reset-password'
       });
       if (error) throw error;
       return { error: null };

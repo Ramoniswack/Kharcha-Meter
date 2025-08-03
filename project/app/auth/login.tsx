@@ -36,25 +36,30 @@ export default function LoginScreen() {
       return;
     }
 
+    console.log('🔐 Starting login attempt for:', email);
     setIsLoading(true);
+    
     try {
       const { user, error } = await signIn(email, password);
       
+      console.log('Login result:', { user: !!user, error });
+      
       if (error) {
+        console.error('❌ Login failed:', error);
         Alert.alert('Login Failed', error);
         setIsLoading(false);
       } else if (user) {
+        console.log('✅ Login successful for user:', user);
         // Success! Let auth context handle navigation automatically
-        console.log('Login successful:', user);
-        // Don't manually set loading to false - let navigation handle it
+        // Loading will be set to false by the auth context
       } else {
-        // No user and no error - unexpected state
+        console.warn('⚠️ No user and no error - unexpected state');
         Alert.alert('Error', 'Login failed - please try again');
         setIsLoading(false);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      Alert.alert('Error', 'An unexpected error occurred');
+      console.error('💥 Login exception:', err);
+      Alert.alert('Error', 'An unexpected error occurred during login');
       setIsLoading(false);
     }
   };

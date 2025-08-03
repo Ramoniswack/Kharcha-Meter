@@ -88,10 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         
         if (session?.user) {
-          console.log('Loading user profile for:', session.user.id);
+          console.log('✅ User authenticated, loading profile for:', session.user.id);
           await loadUserProfile(session.user);
         } else {
-          console.log('No session/user, clearing auth state');
+          console.log('❌ No session/user, clearing auth state');
           setUser(null);
           setLoading(false);
         }
@@ -108,37 +108,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadUserProfile = async (authUser: any) => {
     try {
       console.log('Loading user profile for userId:', authUser.id);
+      
+      // First, set basic user info immediately to unblock navigation
+      const basicUser = {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
+        avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
+      };
+      
+      setUser(basicUser);
+      setLoading(false); // Immediately stop loading to enable navigation
+      
+      // Then try to get/create full profile in background
       let userProfile = await DatabaseService.getCurrentUser();
       
-      // If user profile doesn't exist (common for OAuth), create it
+      // If user profile doesn't exist, create it
       if (!userProfile && authUser) {
         console.log('User profile not found, creating new profile...');
         userProfile = await DatabaseService.createUserProfile(authUser);
       }
       
+      // Update with full profile if available
       if (userProfile) {
         console.log('User profile loaded successfully:', userProfile);
         setUser(userProfile);
-      } else {
-        console.log('Failed to load or create user profile, using basic info');
-        // Fallback to basic user info from auth
-        setUser({
-          id: authUser.id,
-          email: authUser.email,
-          name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
-          avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
-        });
       }
+      
     } catch (error) {
       console.error('Error loading user profile:', error);
-      // Fallback to basic user info from auth even on error
+      // Always ensure user is set and loading is false
       setUser({
         id: authUser.id,
         email: authUser.email,
         name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0],
         avatar: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture
       });
-    } finally {
       setLoading(false);
     }
   };
