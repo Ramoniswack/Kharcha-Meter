@@ -22,6 +22,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ user: any; error: string | null }>;
   signOut: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,34 +33,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
-      if (loading) {
+      if (loading && mounted) {
         console.log('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 5000); // Increased to 5 seconds
+    }, 3000); // Reduced to 3 seconds for better UX
 
-    // Get initial session
-    AuthService.getCurrentSession().then((session) => {
-      console.log('Initial session check:', !!session, session?.user?.email);
-      setSession(session);
-      if (session?.user) {
-        loadUserProfile(session.user);
-      } else {
-        setLoading(false);
+    // Get initial session - this checks AsyncStorage for saved session
+    const initializeAuth = async () => {
+      try {
+        console.log('🔍 Checking for existing session...');
+        const session = await AuthService.getCurrentSession();
+        
+        if (!mounted) return;
+        
+        console.log('Initial session check:', !!session, session?.user?.email);
+        setSession(session);
+        
+        if (session?.user) {
+          console.log('✅ Found existing session, loading user profile...');
+          await loadUserProfile(session.user);
+        } else {
+          console.log('❌ No existing session found');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
-      clearTimeout(timeoutId);
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      setLoading(false);
-      clearTimeout(timeoutId);
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        if (!mounted) return;
+        
+        console.log('🔄 Auth state changed:', event, session?.user?.id);
         console.log('Session details:', { 
           hasSession: !!session, 
           hasUser: !!session?.user,
@@ -80,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
+      mounted = false;
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
@@ -178,6 +198,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return AuthService.resetPassword(email);
   };
 
+  const refreshSession = async () => {
+    try {
+      console.log('🔄 Manually refreshing session...');
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing session:', error);
+      } else {
+        console.log('✅ Session refreshed successfully');
+      }
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -189,6 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signInWithGoogle,
         signOut,
         resetPassword,
+        refreshSession,
       }}
     >
       {children}

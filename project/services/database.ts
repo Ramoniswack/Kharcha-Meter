@@ -304,12 +304,12 @@ export class AuthService {
   // OAuth Authentication Methods
   static async signInWithGoogle() {
     try {
-      console.log('Starting Google OAuth...');
+      console.log('Starting Google OAuth for React Native...');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: 'com.yourname.kharchameter://auth/callback',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -335,7 +335,7 @@ export class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: 'com.yourname.kharchameter://auth/callback'
         }
       });
 
@@ -359,7 +359,7 @@ export class AuthService {
   static async resetPassword(email: string) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: 'com.yourname.kharchameter://auth/reset-password'
       });
       if (error) throw error;
       return { error: null };
