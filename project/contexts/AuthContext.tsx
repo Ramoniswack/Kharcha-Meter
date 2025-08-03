@@ -38,9 +38,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsClient(true);
   }, []);
 
+  // Prevent hydration mismatch by showing loading state until client is ready
+  if (!isClient) {
+    return (
+      <AuthContext.Provider
+        value={{
+          user: null,
+          session: null,
+          loading: true,
+          signIn: async () => ({ user: null, error: 'Not ready' }),
+          signUp: async () => ({ user: null, error: 'Not ready' }),
+          signInWithGoogle: async () => ({ user: null, error: 'Not ready' }),
+          signOut: async () => ({ error: 'Not ready' }),
+          resetPassword: async () => ({ error: 'Not ready' }),
+          refreshSession: async () => {},
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+
   useEffect(() => {
-    if (!isClient) return; // Only run on client side
-    
+    // Only run auth logic on client side
     let isMounted = true;
     
     // Shorter timeout for better UX
@@ -56,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('🔍 Client-side auth initialization...');
         
         // Small delay to ensure DOM is ready
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         if (!isMounted) return;
         
@@ -119,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [isClient]); // Depend on client state
+  }, []); // Remove isClient dependency to prevent re-runs
 
   const loadUserProfile = async (authUser: any) => {
     try {
@@ -254,7 +274,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
-        loading: loading || !isClient, // Keep loading until client-side
+        loading,
         signIn,
         signUp,
         signInWithGoogle,
